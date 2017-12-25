@@ -53,16 +53,15 @@ class ClusterWorker(
     case Terminated(ref) if ref == worker =>
       log.info(s"Worker reference for $name is terminated, leave cluster")
       cluster.leave(cluster.selfAddress)
+      shutdown()
 
     case MemberRemoved(m, _) if m.address == cluster.selfAddress =>
       context.stop(self)
-      cluster.unsubscribe(self)
-      cluster.system.shutdown()
+      shutdown()
 
     case MemberRemoved(m, _) if m.hasRole("master") =>
       log.info("Master is down. Shutdown now")
-      context.stop(self)
-      cluster.system.shutdown()
+      shutdown()
 
     case x if isWorkerMessage(x) =>
       worker forward x
@@ -74,6 +73,12 @@ class ClusterWorker(
       log.debug(s"Worker interface received $x")
 
   }
+
+  private def shutdown(): Unit = {
+    context.stop(self)
+    cluster.system.terminate()
+  }
+
   private def isWorkerMessage(msg: Any): Boolean =
     !msg.isInstanceOf[MemberEvent] && !msg.isInstanceOf[GetRunInitInfo]
 
