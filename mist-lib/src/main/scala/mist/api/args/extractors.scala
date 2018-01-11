@@ -233,4 +233,15 @@ object LabeledExtractor {
 
 }
 
+trait ArgExtractor[A] extends Serializable {
+
+  def extract(input: Map[String, Any]): ArgExtraction[A]
+
+  def describe: Seq[ArgInfo]
+}
+
+object ArgExtractor {
+
+
+}
 

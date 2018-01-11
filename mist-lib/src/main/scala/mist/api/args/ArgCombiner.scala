@@ -31,13 +31,12 @@ object ArgCombiner {
           }
         }
 
-        override def validate(params: Map[String, Any]): Either[Throwable, Any] = {
-          (a.validate(params), b.validate(params)) match {
-            case (Right(_), Right(_)) => Right(())
-            case (Left(errA), Left(errB)) =>
-              Left(new IllegalArgumentException(errA.getLocalizedMessage + "\n" + errB.getLocalizedMessage))
-            case (Left(errA), Right(_)) => Left(errA)
-            case (Right(_), Left(errB)) => Left(errB)
+        override def validate(ctx: FnContext): Option[String] = {
+          (a.validate(ctx), b.validate(ctx)) match {
+            case (None, None) => None
+            case (Some(errA), Some(errB)) => Some(errA + "\n" + errB)
+            case (errA @ Some(_), None) => errA
+            case (None, errB @ Some(_)) => errB
           }
         }
       }

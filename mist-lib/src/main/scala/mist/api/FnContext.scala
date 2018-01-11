@@ -6,7 +6,7 @@ sealed trait FnContext{
   val params: Map[String, Any]
 }
 
-case class FullFnContext(
+final case class FullFnContext(
   setupConf: SetupConfiguration,
   params: Map[String, Any]
 ) extends FnContext

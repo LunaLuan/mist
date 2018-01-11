@@ -2,7 +2,7 @@ package mist.api.args
 
 import mist.api.FnContext
 
-trait UserArg[A] extends ArgDef[A] { self=>
+/*trait UserArg[A] extends ArgDef[A] { self=>
 
   def validated(f: A => Boolean, reason: String = "Validation failed"): UserArg[A] = {
     new UserArg[A] {
@@ -40,4 +40,4 @@ trait UserArg[A] extends ArgDef[A] { self=>
     }
 
 }
-
+*/

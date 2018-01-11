@@ -1,9 +1,6 @@
 package mist.api
 
-import mist.api.args.{
-  ArgDef, SystemArg, Extracted, ArgInfo,
-  ArgExtraction, Missing, InternalArgument, ArgCombiner, ToHandle
-}
+import mist.api.args._
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.SQLContext
@@ -16,12 +13,11 @@ import org.apache.spark.streaming.api.java.JavaStreamingContext
   */
 object BaseContextsArgs {
 
-  val sparkContext: ArgDef[SparkContext] = SystemArg(
-    Seq.empty,
+  val sparkContext: ArgDef[SparkContext] = ArgDef.system(
     c => Extracted(c.setupConf.context)
   )
 
-  val streamingContext: ArgDef[StreamingContext] = SystemArg(Seq(ArgInfo.StreamingContextTag),
+  val streamingContext: ArgDef[StreamingContext] = ArgDef.system(ArgInfo.StreamingContextTag)(
     ctx => {
       val conf = ctx.setupConf
       val ssc = StreamingContext.getActiveOrCreate(() => new StreamingContext(conf.context, conf.streamingDuration))
@@ -29,13 +25,13 @@ object BaseContextsArgs {
     }
   )
 
-  val sqlContext: ArgDef[SQLContext] = SystemArg(Seq(ArgInfo.SqlContextTag),
+  val sqlContext: ArgDef[SQLContext] = ArgDef.system(ArgInfo.SqlContextTag)(
     ctx => sparkContext.map(SQLContext.getOrCreate).extract(ctx)
   )
 
   // HiveContext should be cached per jvm
   // see #325
-  val hiveContext: ArgDef[HiveContext] = new SystemArg[HiveContext] {
+  val hiveContext: ArgDef[HiveContext] = new ArgDef.InternalArg[HiveContext] {
 
     var cache: HiveContext = _
 
@@ -55,8 +51,9 @@ object BaseContextsArgs {
   }
 
   val javaSparkContext: ArgDef[JavaSparkContext] = sparkContext.map(sc => new JavaSparkContext(sc))
-  val javaStreamingContext: ArgDef[JavaStreamingContext] = SystemArg(Seq(ArgInfo.StreamingContextTag),
-    ctx => streamingContext.map(scc => new JavaStreamingContext(scc)).extract(ctx))
+  val javaStreamingContext: ArgDef[JavaStreamingContext] = ArgDef.system(ArgInfo.StreamingContextTag)(
+    ctx => streamingContext.map(scc => new JavaStreamingContext(scc)).extract(ctx)
+  )
 
 }
 
